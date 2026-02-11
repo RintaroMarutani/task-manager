@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f0a1f" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="タスク管理PWAアプリ">
+  <title>タスク管理</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <!-- Mesh gradient background -->
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <header>
+    <div class="header-top">
+      <h1>タスク管理</h1>
+      <button class="btn-settings" id="btn-settings" aria-label="設定">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5"/><path d="M16.17 12.5a1.39 1.39 0 00.28 1.53l.05.05a1.69 1.69 0 11-2.39 2.39l-.05-.05a1.39 1.39 0 00-1.53-.28 1.39 1.39 0 00-.84 1.27v.14a1.69 1.69 0 11-3.38 0v-.07a1.39 1.39 0 00-.91-1.27 1.39 1.39 0 00-1.53.28l-.05.05a1.69 1.69 0 11-2.39-2.39l.05-.05a1.39 1.39 0 00.28-1.53 1.39 1.39 0 00-1.27-.84H2.35a1.69 1.69 0 110-3.38h.07a1.39 1.39 0 001.27-.91 1.39 1.39 0 00-.28-1.53l-.05-.05a1.69 1.69 0 112.39-2.39l.05.05a1.39 1.39 0 001.53.28h.07a1.39 1.39 0 00.84-1.27V2.35a1.69 1.69 0 113.38 0v.07a1.39 1.39 0 00.84 1.27 1.39 1.39 0 001.53-.28l.05-.05a1.69 1.69 0 112.39 2.39l-.05.05a1.39 1.39 0 00-.28 1.53v.07a1.39 1.39 0 001.27.84h.14a1.69 1.69 0 110 3.38h-.07a1.39 1.39 0 00-1.27.84z" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+    <nav class="tab-bar" id="tab-bar">
+      <button class="tab active" data-tab="all">すべて <span class="tab-badge" id="badge-all">0</span></button>
+      <button class="tab" data-tab="active">未完了 <span class="tab-badge" id="badge-active">0</span></button>
+      <button class="tab" data-tab="done">完了 <span class="tab-badge" id="badge-done">0</span></button>
+      <div class="tab-indicator" id="tab-indicator"></div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="source-chips" id="source-chips">
+      <button class="chip active" data-source="">すべて</button>
+      <button class="chip" data-source="local">ローカル</button>
+      <button class="chip" data-source="google">Google</button>
+      <button class="chip" data-source="notion">Notion</button>
+    </div>
+
+    <form id="task-form" class="glass-card">
+      <div class="form-row">
+        <div class="input-wrap">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 6v6M6 9h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="text" id="task-title" placeholder="新しいタスクを追加..." required autocomplete="off">
+        </div>
+        <button type="submit" id="btn-add" aria-label="追加">追加</button>
+      </div>
+      <div class="form-details" id="form-details">
+        <label class="field-label">
+          <span class="field-label-text">メモ</span>
+          <textarea id="task-desc" placeholder="タスクの詳細を入力..." rows="2"></textarea>
+        </label>
+        <label class="field-label">
+          <span class="field-label-text">期限</span>
+          <input type="date" id="task-due">
+        </label>
+      </div>
+      <button type="button" class="btn-toggle-details" id="btn-toggle-details">
+        <svg class="chevron-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3.5 5.25l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        詳細を入力
+      </button>
+    </form>
+
+    <ul id="task-list"></ul>
+    <div id="empty-message" class="hidden">
+      <div class="empty-illustration">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect x="12" y="8" width="40" height="48" rx="6" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+          <path d="M22 24h20M22 32h14M22 40h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+          <circle cx="44" cy="44" r="14" fill="var(--accent)" opacity="0.15"/>
+          <path d="M38 44l4 4 8-8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="empty-title">タスクはありません</p>
+      <p class="empty-sub">上のフォームから追加してみましょう</p>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay hidden" id="edit-modal">
+    <div class="modal glass-card">
+      <h2>タスクを編集</h2>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id">
+        <label>タイトル
+          <input type="text" id="edit-title" required>
+        </label>
+        <label>メモ
+          <textarea id="edit-desc" rows="3"></textarea>
+        </label>
+        <label>期限
+          <input type="date" id="edit-due">
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel">キャンセル</button>
+          <button type="submit" id="btn-save">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal glass-card settings-modal">
+      <div class="settings-header">
+        <h2>接続設定</h2>
+        <button class="btn-close-settings" id="btn-close-settings" aria-label="閉じる">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div class="settings-body">
+        <!-- Notion Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">
+            <span class="section-icon notion-icon">N</span>
+            Notion
+          </h3>
+          <div id="notion-connections"></div>
+          <button class="btn-add-connection" id="btn-add-notion">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Notionデータベースを追加
+          </button>
+        </div>
+
+        <!-- Notion Add Form (hidden by default) -->
+        <div class="settings-form hidden" id="notion-form">
+          <h3 class="settings-section-title">Notion接続を追加</h3>
+          <label class="settings-label">
+            ラベル名
+            <input type="text" id="notion-name" placeholder="例: 仕事タスク" autocomplete="off">
+          </label>
+          <label class="settings-label">
+            Integration Token
+            <input type="text" id="notion-token" placeholder="ntn_..." autocomplete="off">
+          </label>
+          <label class="settings-label">
+            Database ID
+            <input type="text" id="notion-db-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
+          </label>
+          <div id="notion-test-result"></div>
+          <div class="settings-form-actions">
+            <button type="button" class="btn-settings-cancel" id="btn-notion-cancel">キャンセル</button>
+            <button type="button" class="btn-settings-test" id="btn-notion-test">接続テスト</button>
+            <button type="button" class="btn-settings-save" id="btn-notion-save" disabled>保存</button>
+          </div>
+        </div>
+
+        <!-- Google Tasks Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">
+            <span class="section-icon google-icon">G</span>
+            Google Tasks
+          </h3>
+          <div class="coming-soon-card">
+            <p>準備中</p>
+            <p class="coming-soon-sub">OAuth2連携の実装後に利用可能になります</p>
+          </div>
+        </div>
+
+        <!-- CORS Proxy -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">CORS Proxy</h3>
+          <p class="settings-hint">Notion APIはブラウザからの直接アクセスをブロックします。CORSプロキシのURLを設定してください。</p>
+          <label class="settings-label">
+            Proxy URL
+            <input type="text" id="cors-proxy-input" placeholder="https://corsproxy.io/?" autocomplete="off">
+          </label>
+          <button type="button" class="btn-settings-save" id="btn-save-proxy" style="width:100%">保存</button>
+          <div id="proxy-save-result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>
